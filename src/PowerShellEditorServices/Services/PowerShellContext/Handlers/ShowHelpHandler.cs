@@ -45,10 +45,13 @@ namespace Microsoft.PowerShell.EditorServices.Handlers
                     $PSCmdlet.ThrowTerminatingError($PSItem)
                 }
                 try {
-                    $helpUri = [Microsoft.PowerShell.Commands.GetHelpCodeMethods]::GetHelpUri($command)
+                    $helpUri = $command.HelpURI
 
-                    $oldSslVersion = [System.Net.ServicePointManager]::SecurityProtocol
-                    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
+                    if ($ExecutionContext.SessionState.LanguageMode -ne 'ConstrainedLanguage')
+                    {
+                        $oldSslVersion = [System.Net.ServicePointManager]::SecurityProtocol
+                        [System.Net.ServicePointManager]::SecurityProtocol += [System.Net.SecurityProtocolType]::Tls12
+                    }
 
                     # HEAD means we don't need the content itself back, just the response header
                     $status = (Microsoft.PowerShell.Utility\Invoke-WebRequest -Method Head -Uri $helpUri -TimeoutSec 5 -ErrorAction Stop).StatusCode
@@ -56,10 +59,14 @@ namespace Microsoft.PowerShell.EditorServices.Handlers
                         $null = Microsoft.PowerShell.Core\Get-Help $CommandName -Online
                         return
                     }
-                } catch {
+                }
+                catch {
                     # Ignore - we want to drop out to Get-Help -Full
                 } finally {
-                    [System.Net.ServicePointManager]::SecurityProtocol = $oldSslVersion
+                    if ($ExecutionContext.SessionState.LanguageMode -ne 'ConstrainedLanguage')
+                    {
+                        [System.Net.ServicePointManager]::SecurityProtocol = $oldSslVersion
+                    }
                 }
 
                 return Microsoft.PowerShell.Core\Get-Help $CommandName -Full
