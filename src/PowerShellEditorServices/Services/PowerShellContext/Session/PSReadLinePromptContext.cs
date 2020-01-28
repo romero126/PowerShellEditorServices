@@ -21,10 +21,7 @@ namespace Microsoft.PowerShell.EditorServices.Services.PowerShellContext
             [System.Diagnostics.DebuggerHidden()]
             [System.Diagnostics.DebuggerStepThrough()]
             param()
-            return [Microsoft.PowerShell.PSConsoleReadLine, Microsoft.PowerShell.PSReadLine2, Version=2.0.0.0, Culture=neutral, PublicKeyToken=null]::ReadLine(
-                $Host.Runspace,
-                $ExecutionContext,
-                $args[0])";
+            return PSReadLine\PSConsoleHostReadLine";
 
         private const string ReadLineInitScript = @"
             [System.Diagnostics.DebuggerHidden()]
